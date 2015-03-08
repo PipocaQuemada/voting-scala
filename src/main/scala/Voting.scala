@@ -43,7 +43,7 @@ object Voting extends future.Plan
 
 abstract class ElectionSystem {
   def findWinner(election: String ) : Future[String]
-  def vote( election: String, vote: String ) : Future[ResultSet]
+  def vote( election: String, vote: String ) : Future[Seq[ResultSet]]
 }
 
 object ElectionSystem {
@@ -86,6 +86,11 @@ class ApprovalVoting extends ElectionSystem {
       .map( _ => if(voteAccumulator.isEmpty) "No votes cast!"
                  else voteAccumulator.maxBy( _._2 )._1) 
   }
-  override def vote(electionName: String, vote: String) = 
-    Approval.insertRecord( ApprovalModel(UUID.randomUUID, electionName, vote)) 
+  override def vote(electionName: String, vote: String) = { 
+    val votes = vote.split(",")
+    Future.sequence( 
+      refArrayOps(votes).map( v => Approval.insertRecord( ApprovalModel( UUID.randomUUID
+                                                          , electionName
+                                                          , v))))
+  }
 }
