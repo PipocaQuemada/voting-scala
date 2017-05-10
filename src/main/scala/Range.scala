@@ -35,15 +35,20 @@ object Range extends Range with VotingConnector {
 }
 
 class RangeVoting extends ElectionSystem {
+  def votesToResults( votes: Seq[RangeModel]) : scala.collection.mutable.HashMap[String, Int] = {
+    val voteAccumulator = new scala.collection.mutable.HashMap[String, Int]
+    votes.foreach( vote => 
+      voteAccumulator += (( vote.candidate
+                          , vote.amount + voteAccumulator.get(vote.candidate)
+                                                         .getOrElse(0))))
+    voteAccumulator 
+  }
   override def findWinner(election: String ) : Future[String] = {
     val voteAccumulator = new scala.collection.mutable.HashMap[String, Int]
     Range.getVotes(election)
-      .map( _.foreach( vote => 
-        voteAccumulator += (( vote.candidate
-                            , vote.amount + voteAccumulator.get(vote.candidate)
-                                                 .getOrElse(0)))))
-      .map( _ => if(voteAccumulator.isEmpty) "No votes cast!"
-                 else voteAccumulator.maxBy( _._2 )._1) 
+         .map( votesToResults _ )
+         .map( _ => if(voteAccumulator.isEmpty) "No votes cast!"
+                    else voteAccumulator.maxBy( _._2 )._1) 
   }
   override def vote(electionName: String, vote: String) = { 
     // todo: return better error messages

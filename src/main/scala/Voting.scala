@@ -48,9 +48,11 @@ abstract class ElectionSystem {
 object ElectionSystem {
   val approval = new ApprovalVoting()
   val range = new RangeVoting()
+  val borda = new BordaCount()
   def getElectionSystem(electionSystem: String) = electionSystem match {
     case "approval" => approval
     case "range" => range
+    case "borda" => borda
   }
 }
 

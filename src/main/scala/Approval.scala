@@ -31,15 +31,19 @@ object Approval extends Approval with VotingConnector {
 }
 
 class ApprovalVoting extends ElectionSystem {
-  override def findWinner(election: String ) : Future[String] = {
+  def votesToResults( votes: Seq[ApprovalModel]) : scala.collection.mutable.HashMap[String, Int] = {
     val voteAccumulator = new scala.collection.mutable.HashMap[String, Int]
+    votes.foreach( vote => 
+      voteAccumulator += (( vote.candidate
+                          , 1 + voteAccumulator.get(vote.candidate)
+                                               .getOrElse(0))))
+    voteAccumulator 
+  }
+  override def findWinner(election: String ) : Future[String] = {
     Approval.getVotes(election)
-      .map( _.foreach( vote => 
-        voteAccumulator += (( vote.candidate
-                            , 1 + voteAccumulator.get(vote.candidate)
-                                                 .getOrElse(0)))))
-      .map( _ => if(voteAccumulator.isEmpty) "No votes cast!"
-                 else voteAccumulator.maxBy( _._2 )._1) 
+            .map( votesToResults _ )
+            .map( voteAccumulator => if(voteAccumulator.isEmpty) "No votes cast!"
+                                     else voteAccumulator.maxBy( _._2 )._1) 
   }
   override def vote(electionName: String, vote: String) = { 
     val votes = vote.split(",")

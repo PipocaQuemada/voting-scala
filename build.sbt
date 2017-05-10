@@ -7,9 +7,9 @@ version := "0.1.0.0"
 scalaVersion := "2.11.4"
 
 libraryDependencies ++= Seq(
+   "org.scalacheck" %% "scalacheck" % "1.11.3" % Test,
    "net.databinder" %% "unfiltered-netty-server" % "0.8.4",
    "net.databinder.dispatch" %% "dispatch-core" % "0.11.2",
-   "net.databinder" %% "unfiltered-specs2" % "0.8.4" % "test",
    "com.websudos" %% "phantom-dsl" % "1.5.4",
    "com.websudos" %% "phantom-zookeeper" % "1.5.4",
    "com.twitter" %% "finagle-zookeeper" % "6.24.0"
@@ -30,3 +30,4 @@ resolvers ++= Seq(
   "Twitter Repository"               at "http://maven.twttr.com"
   )
 
+testOptions in Test += Tests.Argument(TestFrameworks.ScalaCheck, "-verbosity", "1")
